@@ -1,18 +1,19 @@
 //copied from
 use core::slice::{self, SliceIndex};
+use risc0_zkvm::Prover;
 
-pub struct Vec<T, const N: usize> {
-    buffer: heapless::Vec<T, N>,
+pub struct SovVec<const N: usize> {
+    buffer: heapless::Vec<u32, N>,
 }
 
-impl<T: std::cmp::Ord + std::clone::Clone + std::fmt::Debug, const N: usize> Vec<T, N> {
+impl<const N: usize> SovVec<N> {
     pub const fn new() -> Self {
         Self {
-            buffer: heapless::Vec::<T, N>::new(),
+            buffer: heapless::Vec::<u32, N>::new(),
         }
     }
 
-    pub fn push(&mut self, item: T) -> Result<(), T> {
+    pub fn push(&mut self, item: u32) -> Result<(), u32> {
         self.buffer.push(item)
     }
 
@@ -20,17 +21,17 @@ impl<T: std::cmp::Ord + std::clone::Clone + std::fmt::Debug, const N: usize> Vec
         self.buffer.is_empty()
     }
 
-    pub fn remove(&mut self, index: usize) -> T {
+    pub fn remove(&mut self, index: usize) -> u32 {
         self.buffer.remove(index)
     }
 
-    pub fn into_array<const M: usize>(self) -> Result<[T; M], Self> {
+    pub fn into_array<const M: usize>(self) -> Result<[u32; M], Self> {
         self.buffer.into_array().map_err(|buffer| Self { buffer })
     }
 
-    pub fn get<I>(&self, index: I) -> Option<&<I as SliceIndex<[T]>>::Output>
+    pub fn get<I>(&self, index: I) -> Option<&<I as SliceIndex<[u32]>>::Output>
     where
-        I: SliceIndex<[T]>,
+        I: SliceIndex<[u32]>,
     {
         self.buffer.get(index)
     }
@@ -49,13 +50,14 @@ impl<T: std::cmp::Ord + std::clone::Clone + std::fmt::Debug, const N: usize> Vec
     }
 
     #[cfg(feature = "prover")]
-    fn sorted(&self) -> Self {
-        let mut vals_with_idx = self.0.iter().enumerate().copied().collect();
-        vals_with_idx.sort_by(|(a_idx, a_value), (b_idx, b_value)| a <= b);
-        let indices = vals_with_idx.iter().map(|(idx, val)| *idx).collect();
+    fn sorted(&self, prover: Prover) -> Self {
+        let mut vals_with_idx: Vec<(usize, u32)> =
+            self.buffer.clone().into_iter().enumerate().collect();
+        vals_with_idx.sort_by(|(a_idx, a_value), (b_idx, b_value)| a_value.cmp(b_value));
+        let indices: Vec<usize> = vals_with_idx.iter().map(|(idx, val)| *idx).collect();
         let values = vals_with_idx.into_iter().map(|(idx, val)| idx).collect();
-        ZkEnv::write(&indices[..]);
-        ZkEnv::write(&values[..]);
+        prover.add_input_u32_slice(&indices[..]);
+        prover.add_input_u32_slice(&values[..]);
         Self(values)
     }
 
@@ -72,19 +74,29 @@ impl<T: std::cmp::Ord + std::clone::Clone + std::fmt::Debug, const N: usize> Vec
     // }
 }
 
-impl<'a, T, const N: usize> IntoIterator for &'a Vec<T, N> {
-    type Item = &'a T;
-    type IntoIter = slice::Iter<'a, T>;
+impl<'a, const N: usize> IntoIterator for &'a SovVec<N> {
+    type Item = &'a u32;
+    type IntoIter = slice::Iter<'a, u32>;
 
     fn into_iter(self) -> Self::IntoIter {
         self.buffer.iter()
     }
 }
 
-impl<T, const N: usize> Clone for Vec<T, N>
-where
-    T: Clone,
-{
+impl<const N: usize> FromIterator<u32> for SovVec<N> {
+    fn from_iter<I>(iter: I) -> Self
+    where
+        I: IntoIterator<Item = u32>,
+    {
+        let mut vec = SovVec::new();
+        for i in iter {
+            vec.push(i).ok().expect("SovVec::from_iter overflow");
+        }
+        vec
+    }
+}
+
+impl<const N: usize> Clone for SovVec<N> {
     fn clone(&self) -> Self {
         Self {
             buffer: self.buffer.clone(),
