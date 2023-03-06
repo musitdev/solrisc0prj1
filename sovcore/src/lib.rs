@@ -1,6 +1,13 @@
-//copied from
+#![feature(once_cell)]
+#![feature(array_windows)]
+
 use core::slice::{self, SliceIndex};
-use risc0_zkvm::Prover;
+
+#[cfg(feature = "prove")]
+pub mod prover_context;
+//mod serializer;
+
+pub mod context;
 
 pub struct SovVec<const N: usize> {
     buffer: heapless::Vec<u32, N>,
@@ -36,6 +43,31 @@ impl<const N: usize> SovVec<N> {
         self.buffer.get(index)
     }
 
+    #[cfg(feature = "prove")]
+    pub fn sorted(&self) -> Self {
+        //use u32 as indice to avoid x86 usize (u64) to  risk0 (u32) usize implicit conversion
+        let mut vals_with_idx: Vec<(u32, u32)> = self
+            .buffer
+            .clone()
+            .into_iter()
+            .enumerate()
+            .map(|(indice, val)| (indice as u32, val))
+            .collect();
+        vals_with_idx.sort_by(|(_, a_value), (_, b_value)| a_value.cmp(b_value));
+        let indices: Vec<u32> = vals_with_idx.iter().map(|(idx, _)| *idx).collect();
+        let values: Vec<u32> = vals_with_idx.into_iter().map(|(_, val)| val).collect();
+        prover_context::ZK_CONTEXT
+            .lock()
+            .unwrap()
+            .write_data(indices);
+        let buffer = heapless::Vec::<u32, N>::from_slice(&values[..]).unwrap();
+        prover_context::ZK_CONTEXT
+            .lock()
+            .unwrap()
+            .write_data(values);
+        SovVec { buffer }
+    }
+
     //Risc0 specific method
     #[cfg(feature = "native")]
     pub fn sorted(&self) -> Self {
@@ -46,32 +78,28 @@ impl<const N: usize> SovVec<N> {
             .expect("Vec can't be converted to an array");
         slice.sort();
         let buffer = heapless::Vec::<T, N>::from_slice(&slice).unwrap();
-        Self { buffer }
+        SovVec { buffer }
     }
 
-    #[cfg(feature = "prover")]
-    fn sorted(&self, prover: Prover) -> Self {
-        let mut vals_with_idx: Vec<(usize, u32)> =
-            self.buffer.clone().into_iter().enumerate().collect();
-        vals_with_idx.sort_by(|(a_idx, a_value), (b_idx, b_value)| a_value.cmp(b_value));
-        let indices: Vec<usize> = vals_with_idx.iter().map(|(idx, val)| *idx).collect();
-        let values = vals_with_idx.into_iter().map(|(idx, val)| idx).collect();
-        prover.add_input_u32_slice(&indices[..]);
-        prover.add_input_u32_slice(&values[..]);
-        Self(values)
+    //Risc0 specific method
+    #[cfg(feature = "zk")]
+    pub fn sortedzk(&self) -> Self {
+        todo!()
     }
 
-    // #[cfg(feature = "zk")]
-    // fn sorted(&self) -> Self {
-    //         let sorted_values: Vec<T> = ZkEnv::read();
-    //   let indices: Vec<usize> = ZkEnv::read();
-    //   for [a, b] in sorted_values.0.array_windows::<2>() {
-    //     assert!(a <= b)
-    //   }
-    //   // Make additional checks
-    //   // ...
-    //   Self(sorted_values)
-    // }
+    #[cfg(any(target_os = "zkvm", doc))]
+    fn sorted(&self) -> Self {
+        let sorted_values: Vec<u32> = context::read();
+        let indices: Vec<u32> = context::read();
+        for [a, b] in sorted_values.array_windows::<2>() {
+            assert!(a <= b)
+        }
+        // Make additional checks with indice.
+        // ...
+        Self {
+            buffer: heapless::Vec::<u32, N>::from_slice(&sorted_values[..]).unwrap(),
+        }
+    }
 }
 
 impl<'a, const N: usize> IntoIterator for &'a SovVec<N> {
