@@ -1,11 +1,17 @@
 #[cfg(feature = "prove")]
 use crate::prover_context::ProverContext;
-use serde::Deserialize;
+use core::fmt::Debug;
+use serde::{Deserialize, Serialize};
 
 /// Read private data from the host and deserializes it.
 #[cfg(feature = "prove")]
 pub fn read<T: for<'a> Deserialize<'a>>() -> T {
     ProverContext::read()
+}
+
+#[cfg(feature = "prove")]
+pub fn commit<T: Serialize + Debug>(data: &T) {
+    println!("Commit data:{:?}", data);
 }
 
 #[cfg(any(target_os = "zkvm", doc))]
@@ -15,8 +21,7 @@ pub fn read<T: for<'a> Deserialize<'a>>() -> T {
     env::read()
 }
 
-/// Read private data from the host and deserializes it.
-#[cfg(feature = "zk")]
-pub fn readzk<T: for<'a> Deserialize<'a>>() -> T {
-    todo!()
+#[cfg(any(target_os = "zkvm", doc))]
+pub fn commit<T: Serialize>(data: &T) {
+    env::commit(data)
 }

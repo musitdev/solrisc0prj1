@@ -9,5 +9,9 @@ edition = "2021"
 risc0-build = "0.12"
 
 [dependencies]
-risc0-zkvm = { version = "0.12", default-features = false }
+risc0-zkvm = { version = "0.12", default-features = false, features = [ "std" ] }
+smartcontract= { path = "../smartcontract"}
 serde = { version = "1.0", default-features = false }
+
+[features]
+zk = []

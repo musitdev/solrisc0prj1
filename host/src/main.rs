@@ -15,13 +15,23 @@ fn main() {
     let mut prover = Prover::new(&method_code, MYPRG_ID).expect(
         "Prover should be constructed from valid method source code and corresponding method ID",
     );
-
-    ZK_CONTEXT.lock().unwrap().write(&1);
-    ZK_CONTEXT.lock().unwrap().write(&2);
+    {
+        ZK_CONTEXT.lock().unwrap().write(&3);
+        ZK_CONTEXT.lock().unwrap().write(&2);
+        ZK_CONTEXT.lock().unwrap().write(&4);
+    }
     method::to_execute();
 
     // Run pre execution for hints context creation.
-    //prover.add_input_u32_slice(vec.as_slice());
+    {
+        let context = ZK_CONTEXT.lock().unwrap();
+
+        print!("ZK_CONTEXT len:{}", context.stack.len());
+        context
+            .stack
+            .iter()
+            .for_each(|d| prover.add_input_u32_slice(d.as_slice()));
+    }
 
     // Run prover & generate receipt
     let receipt = prover.run()

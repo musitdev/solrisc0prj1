@@ -22,6 +22,8 @@ impl<const N: usize> SovVec<N> {
 
     pub fn push(&mut self, item: u32) -> Result<(), u32> {
         self.buffer.push(item)
+        //hint generation for prover
+        //hint get for zk
     }
 
     pub fn is_empty(&self) -> bool {
@@ -41,6 +43,8 @@ impl<const N: usize> SovVec<N> {
         I: SliceIndex<[u32]>,
     {
         self.buffer.get(index)
+        //hint write for prover write hint1 then hint2
+        //hit get for zk. get hint2 and hint1
     }
 
     #[cfg(feature = "prove")]
@@ -81,16 +85,10 @@ impl<const N: usize> SovVec<N> {
         SovVec { buffer }
     }
 
-    //Risc0 specific method
-    #[cfg(feature = "zk")]
-    pub fn sortedzk(&self) -> Self {
-        todo!()
-    }
-
     #[cfg(any(target_os = "zkvm", doc))]
-    fn sorted(&self) -> Self {
-        let sorted_values: Vec<u32> = context::read();
+    pub fn sorted(&self) -> Self {
         let indices: Vec<u32> = context::read();
+        let sorted_values: Vec<u32> = context::read();
         for [a, b] in sorted_values.array_windows::<2>() {
             assert!(a <= b)
         }

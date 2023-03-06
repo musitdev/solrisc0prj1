@@ -13,5 +13,5 @@ risc0-zkvm = { version = "0.12", default-features = false }
 [features]
 default = []
 native = []
-prove = ["risc0-zkvm/prove"]
+prove = ["risc0-zkvm/prove", "risc0-zkvm/std" ]
 zk = []

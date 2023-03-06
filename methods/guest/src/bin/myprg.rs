@@ -5,5 +5,5 @@
 risc0_zkvm::guest::entry!(main);
 
 pub fn main() {
-    //smartcontract::to_execute()
+    smartcontract::to_execute()
 }
