@@ -156,3 +156,7 @@ get(3) -> E(0) -> returns (3,300)
 get(5) -> E(1) -> returns (5,500)
 get(8) -> E(3) -> returns (8,800)
 ```
+
+## Assumptions
+* currently only supports Map<u32, u32> This is to avoid complications with serialization and to focus on testing the core algorithm first
+* does not handle duplicate inserts / overwrrites. algorithm can be extended for this, but early on we wanted to focus on an e2e example
