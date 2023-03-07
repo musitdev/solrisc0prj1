@@ -1,18 +1,39 @@
 use sovcore::context;
-use sovcore::SovVec;
+// use sovcore::SovVec;
+use sovcore::SovMap;
 
 pub fn to_execute() {
-    //read 2 value from host
-    let a: u32 = context::read();
-    let b: u32 = context::read();
-    let c: u32 = context::read();
 
-    let mut vec = SovVec::<3>::new();
-    vec.push(a).unwrap();
-    vec.push(b).unwrap();
-    vec.push(c).unwrap();
-    vec.sorted();
-    context::commit(&vec.get(0));
-    context::commit(&vec.get(1));
-    context::commit(&vec.get(2));
+    let mut smap = SovMap::new();
+
+    smap.insert(1,100);
+    smap.insert(2,200);
+    smap.insert(3,300);
+
+    assert_eq!(*smap.get(1).unwrap(), 100);
+    assert_eq!(*smap.get(2).unwrap(), 200);
+    assert_eq!(smap.get(4), None);
+    assert_eq!(smap.get(5), None);
+
+    smap.insert(4,400);
+    smap.insert(5,500);
+
+    assert_eq!(*smap.get(4).unwrap(), 400);
+    assert_eq!(*smap.get(5).unwrap(), 500);
+
+    smap.insert(6,400);
+    smap.insert(7,400);
+    smap.insert(8,400);
+
+    assert_eq!(smap.get(9), None);
+    assert_eq!(smap.get(10), None);
+    assert_eq!(smap.get(11), None);
+    assert_eq!(*smap.get(2).unwrap(), 200);
+    assert_eq!(*smap.get(2).unwrap(), 200);
+    assert_eq!(*smap.get(2).unwrap(), 200);
+    smap.insert(9,900);
+    assert_eq!(*smap.get(9).unwrap(), 900);
+    assert_eq!(smap.get(10), None);
+
+
 }
