@@ -1,3 +1,30 @@
+# Project 1: Implements Hashmap collection 
+
+To implement the hashtable algorithm we take the same process as we speak in the exercise of the interview.
+
+The idea is to execute the code that generate the proof 2 times.
+
+The first time a native standard calculate the indices of all keys + some hint to verify indices calculus in the zk vm. This execution is said to be non trusted.
+
+The second is the Zk Vm execution that generate the proof. It get the indices and hint from the first calculus, verify the hints and use the indices to get values associated to the keys.
+
+The second execution is the normal execution of the Zk zero dev kit.
+
+The first one has been added in the host main prg. All the executed code has been put in a separate crate call smart contract. It simulate the smart contract SDK.
+
+The smart contract is first executed before starting the prover. It use a std native context that mock all zk env call and get all hints send to the zk vm.
+
+After smart contract execution, the context data are send to the prover using the `add_input_u32_slice` function.
+
+During the Zk execution the smart contract get all env data and pre-execution hint using the `env::read` function.
+
+The goal of the hahstable algorithm is to optimize zk execution (for example by avoiding Hash calculus in the VM) using the first native execution and to verify this execution result so that the pre-execution can't lie.
+
+The hahstable algorithm is define [here](sovcore/README.md)
+
+The code is organize like the initial starter template. We add the [smartcontract](guest/smartcontract) crate in the guest part and the [sovcore](sovcore) crate that integrate the context, vector or hahsmap implementation.
+
+
 # RISC Zero Rust Starter Template
 
 Welcome to the RISC Zero Rust Starter Template! This template is intended to give you a starting point for building a project using the RISC Zero zkVM. Throughout the code are comments labelled `TODO` in places where we expect projects will need to modify the code.
