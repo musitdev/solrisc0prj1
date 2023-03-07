@@ -1,4 +1,4 @@
-# Project 1: Implements Hashmap collection 
+# Project 1: Implement Hashmap collection 
 
 To implement the hashtable algorithm we take the same process as we speak in the exercise of the interview.
 
@@ -22,7 +22,7 @@ The goal of the hahstable algorithm is to optimize zk execution (for example by 
 
 The hahstable algorithm is define [here](sovcore/README.md)
 
-The code is organize like the initial starter template. We add the [smartcontract](guest/smartcontract) crate in the guest part and the [sovcore](sovcore) crate that integrate the context, vector or hahsmap implementation.
+The code is organize like the initial starter template. We add the [smartcontract](methods/smartcontract) crate in the methods part and the [sovcore](sovcore) crate that integrate the context, vector or hahsmap implementation.
 
 
 # RISC Zero Rust Starter Template
