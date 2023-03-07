@@ -42,12 +42,10 @@ impl ProverContext {
     {
         let d: SendData = to_vec(value).unwrap();
         self.stack.push(d);
-        println!("write len:{}", self.stack.len());
     }
 
     pub fn write_data(&mut self, data: SendData) {
         self.stack.push(data);
-        println!("write_data len:{}", self.stack.len());
     }
 
     pub fn write_data_ref(&mut self, data: &[u32]) {

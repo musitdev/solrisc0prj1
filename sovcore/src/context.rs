@@ -20,6 +20,14 @@ use risc0_zkvm::guest::env;
 pub fn read<T: for<'a> Deserialize<'a>>() -> T {
     env::read()
 }
+#[cfg(any(target_os = "zkvm", doc))]
+pub fn write_out<T: Serialize>(data: &T) {
+    env::write(data)
+}
+#[cfg(any(target_os = "zkvm", doc))]
+pub fn log(msg: &str) {
+    env::log(msg)
+}
 
 #[cfg(any(target_os = "zkvm", doc))]
 pub fn commit<T: Serialize>(data: &T) {

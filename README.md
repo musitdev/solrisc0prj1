@@ -1,4 +1,5 @@
 # Project 1: Implement Hashmap collection 
+## Presentation of the execution process
 
 To implement the hashtable algorithm we take the same process as we speak in the exercise of the interview.
 
@@ -18,11 +19,17 @@ After smart contract execution, the context data are send to the prover using th
 
 During the Zk execution the smart contract get all env data and pre-execution hint using the `env::read` function.
 
-The goal of the hahstable algorithm is to optimize zk execution (for example by avoiding Hash calculus in the VM) using the first native execution and to verify this execution result so that the pre-execution can't lie.
+## Hashtable
+
+The goal of the hashtable algorithm is to optimize zk execution (for example by avoiding Hash calculus in the VM) using the first native execution and to verify this execution result so that the pre-execution can't lie.
 
 The hahstable algorithm is define [here](sovcore/README.md)
 
 The code is organize like the initial starter template. We add the [smartcontract](methods/smartcontract) crate in the methods part and the [sovcore](sovcore) crate that integrate the context, vector or hahsmap implementation.
+
+## First native execution:
+
+The first native execution is done in the main prg. We would like to do it in the Zk VM without proof generation. We didn't have time to do. We have to configure the Zk vm without prof generation and a specific context that output the needed data using the stdout of the VM.
 
 
 # RISC Zero Rust Starter Template
