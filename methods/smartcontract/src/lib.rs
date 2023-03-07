@@ -6,11 +6,10 @@ pub fn to_execute() {
 
     let mut smap = SovMap::new();
 
-    smap.insert(1,100);
     smap.insert(2,200);
     smap.insert(3,300);
 
-    assert_eq!(*smap.get(1).unwrap(), 100);
+    assert_eq!(smap.get(1), None);
     assert_eq!(*smap.get(2).unwrap(), 200);
     assert_eq!(smap.get(4), None);
     assert_eq!(smap.get(5), None);
@@ -31,9 +30,11 @@ pub fn to_execute() {
     assert_eq!(*smap.get(2).unwrap(), 200);
     assert_eq!(*smap.get(2).unwrap(), 200);
     assert_eq!(*smap.get(2).unwrap(), 200);
+
     smap.insert(9,900);
+
     assert_eq!(*smap.get(9).unwrap(), 900);
     assert_eq!(smap.get(10), None);
-
+    assert_eq!(smap.get(10), None);
 
 }

@@ -20,17 +20,13 @@ pub enum IndexProof {
 
 pub struct SovMap {
     map: hash_map::HashMap<u32, u32>,
-    insert_observed_get_count: usize,
 
-    get_count: usize,
     write_flag: bool,
     store_array_snaps: Vec<(u32, u32)>,
     store_array_sort_proofs: Vec<usize>,
 
     // zk items: need to be 0 for the zk run, but can be used by prover
     original_input_array: Vec<(u32,u32)>,
-    current_get_count: usize,
-    store_array_index: usize,
 }
 
 impl SovMap {
@@ -40,12 +36,54 @@ impl SovMap {
             store_array_snaps: vec![],
             write_flag: true,
             store_array_sort_proofs: vec![],
-            store_array_index: 0,
-            insert_observed_get_count: 0,
-            get_count: 0,
             original_input_array: vec![],
-            current_get_count: 0,
         }
+    }
+
+    pub fn verify_non_existence(&self, k: u32, a: i32, b: i32) -> bool {
+        if a+1 != b {
+            return false
+        }
+        if a >= 0 && (b as usize) < self.store_array_snaps.len() {
+            if k > self.store_array_snaps[a as usize].0 && k < self.store_array_snaps[b as usize].0 {
+                return true
+            } else {
+                return false
+            }
+        } else if a<=0 {
+            if k<self.store_array_snaps[b as usize].0 {
+                return true
+            }
+        } else if b >= self.store_array_snaps.len() as i32 {
+            if k>self.store_array_snaps[a as usize].0 {
+                return true
+            }
+        }
+        return false
+    }
+
+    pub fn sort_validity_check(&self) -> bool {
+        if self.store_array_snaps.len() != self.original_input_array.len() {
+            return false
+        }
+
+        let mut idx_arr = vec![self.original_input_array.len();self.original_input_array.len()];
+        for i in &self.store_array_sort_proofs {
+            if idx_arr[*i] == *i || *i >= self.original_input_array.len(){
+                return false
+            }
+            idx_arr[*i] = *i;
+        }
+
+        for (c,i) in self.store_array_snaps.iter().enumerate() {
+            let orig_idx = self.store_array_sort_proofs[c];
+            let o = &self.original_input_array[orig_idx];
+            if o.0 != i.0 || o.1 != i.1 {
+                return false
+            }
+        }
+
+        true
     }
 
     #[cfg(feature = "native")]
@@ -104,7 +142,7 @@ impl SovMap {
 
     #[cfg(any(target_os = "zkvm", doc))]
     pub fn insert(&mut self, k: u32, v: u32) {
-        self.map.insert(k,v);
+        self.original_input_array.push((k,v));
     }
 
     #[cfg(any(target_os = "zkvm", doc))]
@@ -118,11 +156,20 @@ impl SovMap {
                     (Vec<(u32, u32)>, Vec<usize>)= context::read();
                 self.store_array_snaps = store_array_snaps;
                 self.store_array_sort_proofs = store_array_sort_proofs;
+                if !self.sort_validity_check() {
+                    panic!("prover fraud");
+                }
                 let idx: IndexProof = context::read();
                 match idx {
                     IndexProof::E(indx) =>
                         Some(&self.store_array_snaps[indx].1),
-                    IndexProof::NE(_, _) => None,
+                    IndexProof::NE(a, b) => {
+                        if self.verify_non_existence(key, a, b) {
+                            None
+                        } else {
+                            panic!("prover non existence fraud")
+                        }
+                    },
                     IndexProof::SWITCH => {panic!("nothing to switch to")}
                 }
             }
@@ -155,7 +202,11 @@ impl SovMap {
                 }
             }
         }
-        IndexProof::NE(mid as i32 -1, mid as i32)
+        if mid == 0 {
+            IndexProof::NE(-1,0)
+        } else  {
+            IndexProof::NE(mid as i32,mid as i32 + 1)
+        }
     }
 }
 
