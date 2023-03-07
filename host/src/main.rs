@@ -15,11 +15,11 @@ fn main() {
     let mut prover = Prover::new(&method_code, MYPRG_ID).expect(
         "Prover should be constructed from valid method source code and corresponding method ID",
     );
-    {
-        ZK_CONTEXT.lock().unwrap().write(&3);
-        ZK_CONTEXT.lock().unwrap().write(&2);
-        ZK_CONTEXT.lock().unwrap().write(&4);
-    }
+    // {
+    //     ZK_CONTEXT.lock().unwrap().write(&3);
+    //     ZK_CONTEXT.lock().unwrap().write(&2);
+    //     ZK_CONTEXT.lock().unwrap().write(&4);
+    // }
     method::to_execute();
 
     // Run pre execution for hints context creation.
