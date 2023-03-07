@@ -85,7 +85,7 @@ get(8)
 ```
 
 
-### prover side
+### prover side for example 3
 
 NOTE: when storing the store_array_snaps, we will ignore store_array_sort_proofs to make it cleaner to look at. we can assume that a sorted array is validatable
 ```
@@ -113,7 +113,7 @@ get(5) ->  SWITCH, [(5,500),(6,600),(9,900)], E(0), E(0), E(0), E(2), E(1), NE(1
 get(8) ->  SWITCH, [(5,500),(6,600),(9,900)], E(0), E(0), E(0), E(2), E(1), NE(1,2), NE(-1,0), SWITCH, [(3,300),(5,500),(6,600),(8,800),(9,900)], NE(-1,0), E(0), E(1), E(3)
 ```
 
-### zk side
+### zk side for example 3
 
 NOTE: as explained above in the prover side, store_array_sort_proofs is also included with store_array_snaps, but we're not listing that out for convenience
 
