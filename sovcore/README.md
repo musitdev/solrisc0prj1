@@ -160,3 +160,6 @@ get(8) -> E(3) -> returns (8,800)
 ## Assumptions
 * currently only supports Map<u32, u32> This is to avoid complications with serialization and to focus on testing the core algorithm first
 * does not handle duplicate inserts / overwrrites. algorithm can be extended for this, but early on we wanted to focus on an e2e example
+
+## initial attempts
+* https://github.com/dubbelosix/reignmap
